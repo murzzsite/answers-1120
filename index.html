@@ -35,6 +35,11 @@ h2.g{margin:30px 0 6px;font-size:20px}
 .btn.sm{background:#fff;color:var(--acc);border:1px solid var(--acc);padding:5px 9px;font-size:13px}
 .btn.done{background:var(--ok);border-color:var(--ok);color:#fff}
 .msg pre{margin:0;padding:12px;white-space:pre-wrap;word-break:break-word;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.msg textarea.edit{display:block;width:100%;border:0;outline:0;resize:vertical;padding:12px;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff;min-height:120px}
+.msg textarea.edit:focus{background:#fcfdff;box-shadow:inset 0 0 0 2px var(--accbg)}
+.acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.saved{color:var(--ok);font-size:13px}
+.btn.danger{color:#b3261e;border-color:#b3261e}
 .ph{background:var(--warn);color:var(--warnink);border-radius:4px;padding:0 2px}
 .hide{display:none}
 @media (max-width:520px){header h1{font-size:16px}}
@@ -52,49 +57,59 @@ h2.g{margin:30px 0 6px;font-size:20px}
   </div>
 </header>
 <main>
-  <div class="intro">Над каждым ответом стоит <b>ник клиента</b>: туда его и копировать. Кнопка «Копировать» берёт текст сообщения без пометок. <span class="ph">Жёлтое в {скобках}</span> нужно заполнить или проверить до отправки: там данные, которые я не вижу (статус в кабинете биржи, решение руководителя). Жёлтые блоки «Проверить» сообщение клиенту не уходят.</div>
+  <div class="intro">Над каждым ответом стоит <b>ник клиента</b>: туда его и копировать. Текст в рамке можно <b>править прямо здесь</b>: правки сохраняются сами (в этом браузере), кнопки «Сохранить», «Сбросить» (вернуть исходный) и «Удалить». Ник клиента уже стоит первой строкой сообщения: «Копировать» берёт всё сразу. Жёлтые блоки «Проверить» в сообщение не входят.</div>
   <div id="root"></div>
 </main>
 <script src="data.js"></script>
 <script>
 (function(){
   var root=document.getElementById('root');
+  var KEY='answers1120:';
+  function ls(k,v){try{if(v===undefined)return localStorage.getItem(KEY+k);if(v===null)localStorage.removeItem(KEY+k);else localStorage.setItem(KEY+k,v)}catch(e){return null}}
   function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-  function hl(s){
-    var out='',d=0,buf='';
-    for(var i=0;i<s.length;i++){
-      var c=s[i];
-      if(c==='{'){ if(d===0){out+=esc(buf);buf='';} d++; buf+=c; }
-      else if(c==='}'&&d>0){ buf+=c; d--; if(d===0){ out+='<span class="ph">'+esc(buf)+'</span>'; buf=''; } }
-      else buf+=c;
-    }
-    return out+esc(buf);
-  }
   function copy(text,btn){
-    var done=function(){var o=btn.textContent;btn.textContent='Скопировано';btn.classList.add('done');setTimeout(function(){btn.textContent=o;btn.classList.remove('done')},1600)};
-    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(done,function(){fb()})}else fb();
+    var done=function(){var o=btn.dataset.o||btn.textContent;btn.dataset.o=o;btn.textContent='Скопировано';btn.classList.add('done');setTimeout(function(){btn.textContent=o;btn.classList.remove('done')},1600)};
     function fb(){var t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');done()}catch(e){}document.body.removeChild(t)}
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(done,fb)}else fb();
   }
+  function fit(t){t.style.height='auto';t.style.height=(t.scrollHeight+4)+'px'}
+  function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
   window.GROUPS.forEach(function(g){
-    var sec=document.createElement('section');sec.dataset.g=g.id;
-    var h=document.createElement('h2');h.className='g';h.textContent=g.title;sec.appendChild(h);
-    if(g.note){var n=document.createElement('p');n.className='gnote';n.textContent=g.note;sec.appendChild(n)}
+    var sec=mk('section');sec.dataset.g=g.id;
+    sec.appendChild(mk('h2','g',g.title));
+    if(g.note)sec.appendChild(mk('p','gnote',g.note));
     g.cards.forEach(function(c){
-      var el=document.createElement('article');el.className='card';el.dataset.s=(c.nick+' '+c.name).toLowerCase();
-      var row=document.createElement('div');row.className='nickrow';
-      var nk=document.createElement('span');nk.className='nick';nk.textContent=c.nick;row.appendChild(nk);
-      var cn=document.createElement('button');cn.className='btn sm';cn.textContent='Копировать ник';cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
-      var nm=document.createElement('span');nm.className='name';nm.textContent=c.name;row.appendChild(nm);
+      var cid=c.nick;
+      if(ls('delcard:'+cid)==='1')return;
+      var el=mk('article','card');el.dataset.s=(c.nick+' '+c.name).toLowerCase();
+      var row=mk('div','nickrow');
+      row.appendChild(mk('span','nick',c.nick));
+      var cn=mk('button','btn sm','Копировать ник');cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
+      row.appendChild(mk('span','name',c.name));
+      var dc=mk('button','btn sm danger','Убрать карточку');dc.onclick=function(){if(confirm('Убрать карточку '+c.nick+'?')){ls('delcard:'+cid,'1');el.remove();apply()}};row.appendChild(dc);
       el.appendChild(row);
-      var st=document.createElement('p');st.className='status';st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st);
-      if(c.checks&&c.checks.length){var ul=document.createElement('ul');ul.className='checks';c.checks.forEach(function(x){var li=document.createElement('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
+      var st=mk('p','status');st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st);
+      if(c.checks&&c.checks.length){var ul=mk('ul','checks');c.checks.forEach(function(x){var li=mk('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
       c.msgs.forEach(function(m){
-        var box=document.createElement('div');box.className='msg';
-        var mh=document.createElement('div');mh.className='msg__h';
-        var lb=document.createElement('b');lb.textContent=m.l;mh.appendChild(lb);
-        var bt=document.createElement('button');bt.className='btn';bt.textContent='Копировать';bt.onclick=function(){copy(m.t,bt)};mh.appendChild(bt);
-        var pre=document.createElement('pre');pre.innerHTML=hl(m.t);
-        box.appendChild(mh);box.appendChild(pre);el.appendChild(box);
+        var mid=cid+'|'+m.l;
+        if(ls('del:'+mid)==='1')return;
+        var orig=c.nick+String.fromCharCode(10)+m.t;
+        var box=mk('div','msg');
+        var mh=mk('div','msg__h');mh.appendChild(mk('b',null,m.l));
+        var acts=mk('div','acts');
+        var ta=mk('textarea','edit');ta.spellcheck=false;
+        var st2=mk('span','saved','');
+        var saved=ls('txt:'+mid),sv=ls('src:'+mid);
+        ta.value=(saved!==null&&sv===String(orig.length)+':'+orig.slice(0,40))?saved:orig;
+        function save(flag){ls('txt:'+mid,ta.value);ls('src:'+mid,String(orig.length)+':'+orig.slice(0,40));st2.textContent=flag?'Сохранено':'Сохранено автоматически';setTimeout(function(){st2.textContent=''},1800)}
+        var timer;ta.addEventListener('input',function(){fit(ta);clearTimeout(timer);timer=setTimeout(function(){save(false)},600)});
+        var bs=mk('button','btn sm','Сохранить');bs.onclick=function(){save(true)};
+        var br=mk('button','btn sm','Сбросить');br.onclick=function(){ta.value=orig;ls('txt:'+mid,null);ls('src:'+mid,null);fit(ta)};
+        var bd=mk('button','btn sm danger','Удалить');bd.onclick=function(){if(confirm('Удалить это сообщение?')){ls('del:'+mid,'1');box.remove()}};
+        var bc=mk('button','btn','Копировать');bc.onclick=function(){copy(ta.value,bc)};
+        acts.appendChild(st2);acts.appendChild(bs);acts.appendChild(br);acts.appendChild(bd);acts.appendChild(bc);
+        mh.appendChild(acts);box.appendChild(mh);box.appendChild(ta);el.appendChild(box);
+        setTimeout(function(){fit(ta)},0);
       });
       sec.appendChild(el);
     });
@@ -107,6 +122,7 @@ h2.g{margin:30px 0 6px;font-size:20px}
       s.querySelectorAll('.card').forEach(function(c){var ok=!q||c.dataset.s.indexOf(q)>-1;c.classList.toggle('hide',!ok);if(ok)any=true});
       s.classList.toggle('hide',!show||!any);
     });
+    document.querySelectorAll('textarea.edit').forEach(fit);
   }
   document.querySelectorAll('.chip').forEach(function(b){b.onclick=function(){document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});b.classList.add('on');f=b.dataset.f;apply()}});
   document.getElementById('q').addEventListener('input',function(e){q=e.target.value.trim().toLowerCase();apply()});
