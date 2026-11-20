@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Ответы клиентам 20.11</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#16202a;--ink2:#5b6773;--line:#e1e5ea;--acc:#2a5bd7;--accbg:#eaf0fd;--warn:#fff3c4;--warnink:#7a5b00;--ok:#1f8a4c;--r:14px}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:rgba(246,247,249,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:12px 16px}
+header h1{margin:0 0 8px;font-size:18px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#q{flex:1;min-width:180px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font:inherit;font-size:14px;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{max-width:860px;margin:0 auto;padding:16px 16px 80px}
+.intro{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;color:var(--ink2);font-size:15px;margin-bottom:20px}
+.intro b{color:var(--ink)}
+h2.g{margin:30px 0 6px;font-size:20px}
+.gnote{color:var(--ink2);font-size:14.5px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.nickrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.nick{font:600 17px ui-monospace,Consolas,monospace;background:var(--accbg);color:var(--acc);padding:5px 10px;border-radius:8px;word-break:break-all}
+.name{color:var(--ink2);font-size:14.5px}
+.status{margin:10px 0 0;font-size:15px}
+.status b{color:var(--ink2);font-weight:600}
+.checks{margin:10px 0 0;padding:10px 12px 10px 28px;background:var(--warn);color:var(--warnink);border-radius:10px;font-size:14.5px}
+.checks li{margin:3px 0}
+.msg{margin-top:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.msg__h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;background:#f1f3f6;font-size:14px;color:var(--ink2)}
+.msg__h b{color:var(--ink)}
+.btn{border:0;background:var(--acc);color:#fff;border-radius:9px;padding:8px 14px;font:600 14px system-ui;cursor:pointer;white-space:nowrap}
+.btn.sm{background:#fff;color:var(--acc);border:1px solid var(--acc);padding:5px 9px;font-size:13px}
+.btn.done{background:var(--ok);border-color:var(--ok);color:#fff}
+.msg pre{margin:0;padding:12px;white-space:pre-wrap;word-break:break-word;font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.ph{background:var(--warn);color:var(--warnink);border-radius:4px;padding:0 2px}
+.hide{display:none}
+@media (max-width:520px){header h1{font-size:16px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Ответы клиентам · 20.11</h1>
+  <div class="bar">
+    <input id="q" type="search" placeholder="Поиск по нику или имени">
+    <button class="chip on" data-f="all">Все</button>
+    <button class="chip" data-f="g1">Ответы</button>
+    <button class="chip" data-f="g2">Сайт создать</button>
+    <button class="chip" data-f="g3">Правки</button>
+    <button class="chip" data-f="g4">Цифра 1</button>
+  </div>
+</header>
+<main>
+  <div class="intro">Над каждым ответом стоит <b>ник клиента</b>: туда его и копировать. Кнопка «Копировать» берёт текст сообщения без пометок. <span class="ph">Жёлтое в {скобках}</span> нужно заполнить или проверить до отправки: там данные, которые я не вижу (статус в кабинете биржи, решение руководителя). Жёлтые блоки «Проверить» сообщение клиенту не уходят.</div>
+  <div id="root"></div>
+</main>
+<script src="data.js"></script>
+<script>
+(function(){
+  var root=document.getElementById('root');
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function hl(s){
+    var out='',d=0,buf='';
+    for(var i=0;i<s.length;i++){
+      var c=s[i];
+      if(c==='{'){ if(d===0){out+=esc(buf);buf='';} d++; buf+=c; }
+      else if(c==='}'&&d>0){ buf+=c; d--; if(d===0){ out+='<span class="ph">'+esc(buf)+'</span>'; buf=''; } }
+      else buf+=c;
+    }
+    return out+esc(buf);
+  }
+  function copy(text,btn){
+    var done=function(){var o=btn.textContent;btn.textContent='Скопировано';btn.classList.add('done');setTimeout(function(){btn.textContent=o;btn.classList.remove('done')},1600)};
+    if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(text).then(done,function(){fb()})}else fb();
+    function fb(){var t=document.createElement('textarea');t.value=text;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');done()}catch(e){}document.body.removeChild(t)}
+  }
+  window.GROUPS.forEach(function(g){
+    var sec=document.createElement('section');sec.dataset.g=g.id;
+    var h=document.createElement('h2');h.className='g';h.textContent=g.title;sec.appendChild(h);
+    if(g.note){var n=document.createElement('p');n.className='gnote';n.textContent=g.note;sec.appendChild(n)}
+    g.cards.forEach(function(c){
+      var el=document.createElement('article');el.className='card';el.dataset.s=(c.nick+' '+c.name).toLowerCase();
+      var row=document.createElement('div');row.className='nickrow';
+      var nk=document.createElement('span');nk.className='nick';nk.textContent=c.nick;row.appendChild(nk);
+      var cn=document.createElement('button');cn.className='btn sm';cn.textContent='Копировать ник';cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
+      var nm=document.createElement('span');nm.className='name';nm.textContent=c.name;row.appendChild(nm);
+      el.appendChild(row);
+      var st=document.createElement('p');st.className='status';st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st);
+      if(c.checks&&c.checks.length){var ul=document.createElement('ul');ul.className='checks';c.checks.forEach(function(x){var li=document.createElement('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
+      c.msgs.forEach(function(m){
+        var box=document.createElement('div');box.className='msg';
+        var mh=document.createElement('div');mh.className='msg__h';
+        var lb=document.createElement('b');lb.textContent=m.l;mh.appendChild(lb);
+        var bt=document.createElement('button');bt.className='btn';bt.textContent='Копировать';bt.onclick=function(){copy(m.t,bt)};mh.appendChild(bt);
+        var pre=document.createElement('pre');pre.innerHTML=hl(m.t);
+        box.appendChild(mh);box.appendChild(pre);el.appendChild(box);
+      });
+      sec.appendChild(el);
+    });
+    root.appendChild(sec);
+  });
+  var f='all',q='';
+  function apply(){
+    document.querySelectorAll('section[data-g]').forEach(function(s){
+      var show=f==='all'||s.dataset.g===f,any=false;
+      s.querySelectorAll('.card').forEach(function(c){var ok=!q||c.dataset.s.indexOf(q)>-1;c.classList.toggle('hide',!ok);if(ok)any=true});
+      s.classList.toggle('hide',!show||!any);
+    });
+  }
+  document.querySelectorAll('.chip').forEach(function(b){b.onclick=function(){document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});b.classList.add('on');f=b.dataset.f;apply()}});
+  document.getElementById('q').addEventListener('input',function(e){q=e.target.value.trim().toLowerCase();apply()});
+})();
+</script>
+</body>
+</html>
