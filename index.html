@@ -40,6 +40,8 @@ h2.g{margin:30px 0 6px;font-size:20px}
 .acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .saved{color:var(--ok);font-size:13px}
 .btn.danger{color:#b3261e;border-color:#b3261e}
+.ov{margin:10px 0 0;padding:10px 12px;background:#e8f4ec;color:#14532d;border-radius:10px;font-size:14.5px;border:1px solid #b9dfc6}
+.ov a{color:#14532d;font-weight:600}
 .ph{background:var(--warn);color:var(--warnink);border-radius:4px;padding:0 2px}
 .hide{display:none}
 @media (max-width:520px){header h1{font-size:16px}}
@@ -50,10 +52,7 @@ h2.g{margin:30px 0 6px;font-size:20px}
   <h1>Ответы клиентам · 20.11</h1>
   <div class="bar">
     <input id="q" type="search" placeholder="Поиск по нику или имени">
-    <button class="chip on" data-f="all">Все</button>
-    <button class="chip" data-f="g1">Отправить</button>
-    <button class="chip" data-f="g2">Новые сайты</button>
-    <button class="chip" data-f="g3">Не отправлено</button>
+    <span id="chips"></span>
   </div>
 </header>
 <main>
@@ -90,7 +89,8 @@ h2.g{margin:30px 0 6px;font-size:20px}
       el.appendChild(row);
       var st=mk('p','status');st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st);
       if(c.checks&&c.checks.length){var ul=mk('ul','checks');c.checks.forEach(function(x){var li=mk('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
-      c.msgs.forEach(function(m){
+      if(c.ov){var ob=mk('div','ov');ob.innerHTML='<b>Ответ уже есть в «Отработке возражений».</b> '+c.ov;el.appendChild(ob)}
+      (c.msgs||[]).forEach(function(m){
         var mid=cid+'|'+m.l;
         if(ls('del:'+mid)==='1')return;
         var orig=c.nick+String.fromCharCode(10)+m.t;
@@ -115,6 +115,8 @@ h2.g{margin:30px 0 6px;font-size:20px}
     });
     root.appendChild(sec);
   });
+  var chips=document.getElementById('chips');
+  [['all','Все']].concat(window.GROUPS.map(function(g){return [g.id,g.chip||g.title]})).forEach(function(p,i){var b=mk('button','chip'+(i?'':' on'),p[1]);b.dataset.f=p[0];chips.appendChild(b)});
   var f='all',q='';
   function apply(){
     document.querySelectorAll('section[data-g]').forEach(function(s){
