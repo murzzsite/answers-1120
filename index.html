@@ -42,6 +42,12 @@ h2.g{margin:30px 0 6px;font-size:20px}
 .btn.danger{color:#b3261e;border-color:#b3261e}
 .ov{margin:10px 0 0;padding:10px 12px;background:#e8f4ec;color:#14532d;border-radius:10px;font-size:14.5px;border:1px solid #b9dfc6}
 .ov a{color:#14532d;font-weight:600}
+.statusbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.st{font-size:13.5px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink2)}
+.st--ok{background:#e8f4ec;border-color:#b9dfc6;color:#14532d}
+.st--old{background:#fff3c4;border-color:#ead58a;color:#7a5b00}
+.st--bad{background:#fde7e5;border-color:#f0b4ae;color:#8a1c14;font-weight:600}
+.st--run{background:#eef2fb;border-color:#cdd8f2;color:#2a5bd7}
 .ph{background:var(--warn);color:var(--warnink);border-radius:4px;padding:0 2px}
 .hide{display:none}
 @media (max-width:520px){header h1{font-size:16px}}
@@ -56,12 +62,12 @@ h2.g{margin:30px 0 6px;font-size:20px}
   </div>
 </header>
 <main>
+  <div id="status" class="statusbar"></div>
   <div class="intro">Над каждым ответом стоит <b>ник клиента</b>: туда его и копировать. Текст в рамке можно <b>править прямо здесь</b>: правки сохраняются сами (в этом браузере), кнопки «Сохранить», «Сбросить» (вернуть исходный) и «Удалить». Ник клиента уже стоит первой строкой сообщения: «Копировать» берёт всё сразу. Жёлтые блоки «Проверить» в сообщение не входят.</div>
   <div id="root"></div>
 </main>
-<script src="data.js?v=20261123h"></script>
 <script>
-(function(){
+window.__main=function(){
   var root=document.getElementById('root');
   var KEY='answers1120:';
   function ls(k,v){try{if(v===undefined)return localStorage.getItem(KEY+k);if(v===null)localStorage.removeItem(KEY+k);else localStorage.setItem(KEY+k,v)}catch(e){return null}}
@@ -129,6 +135,26 @@ h2.g{margin:30px 0 6px;font-size:20px}
   }
   document.querySelectorAll('.chip').forEach(function(b){b.onclick=function(){document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});b.classList.add('on');f=b.dataset.f;apply()}});
   document.getElementById('q').addEventListener('input',function(e){q=e.target.value.trim().toLowerCase();apply()});
+};
+(function(){
+  var need=2,done=0,t=Date.now();
+  function fin(){done++;if(done<need)return;window.__main();renderStatus()}
+  function load(src){var e=document.createElement('script');e.src=src+'?t='+t;e.onload=fin;e.onerror=fin;document.head.appendChild(e)}
+  function two(n){return String(n).length<2?'0'+n:String(n)}
+  function fmt(iso){var d=new Date(iso);if(isNaN(d))return '';return two(d.getDate())+'.'+two(d.getMonth()+1)+' '+two(d.getHours())+':'+two(d.getMinutes())}
+  function renderStatus(){
+    var box=document.getElementById('status');if(!box)return;
+    var S=window.STATUS||{};var now=Date.now();
+    function one(name,x){
+      if(!x||!x.at)return '<span class="st st--bad">'+name+': ещё не проверялось</span>';
+      var age=(now-new Date(x.at).getTime())/3600000;
+      var cls=x.ok?(age>3?'st--old':'st--ok'):'st--bad';
+      var txt=x.ok?(age>3?'давно не проверялось':'вход активен'):'ВХОД СБРОШЕН, войдите';
+      return '<span class="st '+cls+'">'+name+': '+(x.ok?'✓ ':'✗ ')+'просмотрено '+fmt(x.at)+' · '+txt+'</span>';
+    }
+    box.innerHTML=one('Telegram',S.telegram)+one('Tripwire',S.tripwire)+(S.run?'<span class="st st--run">Последний цикл: '+fmt(S.run)+'</span>':'');
+  }
+  load('data.js');load('status.js');
 })();
 </script>
 </body>
