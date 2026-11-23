@@ -52,7 +52,7 @@ h2.g{margin:30px 0 6px;font-size:20px}
   <h1>Ответы клиентам · 20.11</h1>
   <div class="bar">
     <input id="q" type="search" placeholder="Поиск по нику или имени">
-    <span id="chips"></span>
+    <span id="chips"></span><button class="chip" id="restore" title="Показать карточки и сообщения, которые вы убирали">Вернуть убранные</button>
   </div>
 </header>
 <main>
@@ -78,7 +78,7 @@ h2.g{margin:30px 0 6px;font-size:20px}
     sec.appendChild(mk('h2','g',g.title));
     if(g.note)sec.appendChild(mk('p','gnote',g.note));
     g.cards.forEach(function(c){
-      var cid=c.nick;
+      var cid=g.id+'|'+c.nick;
       if(ls('delcard:'+cid)==='1')return;
       var el=mk('article','card');el.dataset.s=(c.nick+' '+c.name).toLowerCase();
       var row=mk('div','nickrow');
@@ -117,6 +117,7 @@ h2.g{margin:30px 0 6px;font-size:20px}
   });
   var chips=document.getElementById('chips');
   [['all','Все']].concat(window.GROUPS.map(function(g){return [g.id,g.chip||g.title]})).forEach(function(p,i){var b=mk('button','chip'+(i?'':' on'),p[1]);b.dataset.f=p[0];chips.appendChild(b)});
+  document.getElementById('restore').onclick=function(){try{Object.keys(localStorage).filter(function(k){return k.indexOf(KEY+'delcard:')===0||k.indexOf(KEY+'del:')===0}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}location.reload()};
   var f='all',q='';
   function apply(){
     document.querySelectorAll('section[data-g]').forEach(function(s){
