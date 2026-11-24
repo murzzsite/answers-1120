@@ -123,6 +123,9 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
 .toast .btn{background:#fff;color:var(--ink);padding:7px 12px;font-size:13px}
 .toast .btn.ok{background:#22a35a;color:#fff}
+.btn.lnkb{background:#fff;color:var(--acc);border:1px solid var(--acc);text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn.lnkb:hover{background:var(--accsoft)}
+.btn.sq{padding:7px 10px}
 .qsec{margin-top:22px}
 .qa{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:0 0 8px;overflow:hidden}
 .qa .qh{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer}
@@ -161,7 +164,7 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
   <details class="how"><summary>Как пользоваться</summary><p>Карточки свёрнуты: нажмите на строку клиента, чтобы раскрыть. «Копировать» в строке копирует первое сообщение (ник уже первой строкой). Текст можно править прямо здесь, правки сохраняются сами (в этом браузере). Жёлтые блоки «Проверить» в сообщение не входят. «Убрать карточку» прячет её у вас, вернуть можно кнопкой «Вернуть убранные».</p></details>
   <div id="root"></div>
   <div id="empty" class="empty hide">Ничего не найдено</div>
-<div class="toast" id="toast"><span id="tmsg"></span><button class="btn ok" id="tok" style="display:none"></button><button class="btn" id="tundo" style="display:none">Отменить</button></div>
+<div class="toast" id="toast"><span id="tmsg"></span><button class="btn ok" id="tok" style="display:none"></button><a class="btn" id="topen" style="display:none;text-decoration:none" target="_blank" rel="noopener">Открыть чат ↗</a><button class="btn" id="tundo" style="display:none">Отменить</button></div>
 </main>
 <script>
 window.__main=function(){
@@ -178,7 +181,7 @@ window.__main=function(){
   function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
   function today(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
   function sentCount(){return +(ls('sent:'+today())||0)}
-  var tt;function toast(msg,okLabel,okFn,undoFn){var t=document.getElementById('toast'),ok=document.getElementById('tok'),un=document.getElementById('tundo');document.getElementById('tmsg').textContent=msg;ok.style.display=okLabel?'':'none';if(okLabel)ok.textContent=okLabel;un.style.display=undoFn?'':'none';ok.onclick=function(){t.classList.remove('on');if(okFn)okFn()};un.onclick=function(){t.classList.remove('on');if(undoFn)undoFn()};t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},okLabel?7000:5000)}
+  var tt;function toast(msg,okLabel,okFn,undoFn,openUrl){var op=document.getElementById('topen');op.style.display=openUrl?'':'none';if(openUrl)op.href=openUrl;var t=document.getElementById('toast'),ok=document.getElementById('tok'),un=document.getElementById('tundo');document.getElementById('tmsg').textContent=msg;ok.style.display=okLabel?'':'none';if(okLabel)ok.textContent=okLabel;un.style.display=undoFn?'':'none';ok.onclick=function(){t.classList.remove('on');if(okFn)okFn()};un.onclick=function(){t.classList.remove('on');if(undoFn)undoFn()};t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},okLabel?7000:5000)}
   function markSent(el,cid,nick){ls('delcard:'+cid,'1');el.classList.add('gone');ls('sent:'+today(),String(sentCount()+1));apply();toast('Отмечено как отправленное: '+nick,null,null,function(){ls('delcard:'+cid,null);el.classList.remove('gone');ls('sent:'+today(),String(Math.max(0,sentCount()-1)));apply()})}
   function waitTxt(ms){var m=Math.floor(ms/60000);if(m<1)return 'только что';if(m<60)return m+' мин';var h=Math.floor(m/60);if(h<24)return h+' ч'+(m%60?' '+(m%60)+' м':'');var d=Math.floor(h/24);return d+' дн '+(h%24)+' ч'}
   function paintWaits(){var now=Date.now();document.querySelectorAll('.card[data-wait]').forEach(function(c){var w=+c.dataset.wait;if(!w)return;var el=c.querySelector('.tag.wait');if(!el)return;var ms=now-w;el.textContent='ждёт '+waitTxt(ms);el.classList.toggle('hot',ms>3*3600e3);el.classList.toggle('mid',ms>3600e3&&ms<=3*3600e3)})}
@@ -202,6 +205,7 @@ window.__main=function(){
       var row=mk('div','nickrow');
       row.appendChild(mk('span','nick',c.nick));
       var cn=mk('button','btn sm ghost','Копировать ник');cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
+      if(c.tg){var ol=mk('a','btn sm lnkb','Открыть чат ↗');ol.href=c.tg;ol.target='_blank';ol.rel='noopener';row.insertBefore(ol,row.firstChild)}
       var dc=mk('button','btn sm okbtn','✓ Отправила');dc.onclick=function(){markSent(el,cid,c.nick)};row.appendChild(dc);
       el.appendChild(row);
       if(c.status){var st=mk('p','status');st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st)}
@@ -245,7 +249,8 @@ window.__main=function(){
       if(c.waitAt)meta.insertBefore(mk('span','tag wait','…'),meta.firstChild);
       meta.appendChild(mk('span','nm',nm));head.appendChild(meta);
       var cr=mk('div','cright');
-      if(g.id!=='g_summary'){var qb=mk('button','btn qc','Копировать');qb.onclick=function(e){e.stopPropagation();var t=body.querySelector('textarea.edit');if(t){copy(t.value,qb);toast('Скопировано. Отправили клиенту?','✓ Отправила',function(){markSent(el,cid,c.nick)})}};cr.appendChild(qb)}
+      if(g.id!=='g_summary'){var qb=mk('button','btn qc','Копировать');qb.onclick=function(e){e.stopPropagation();var t=body.querySelector('textarea.edit');if(t){copy(t.value,qb);toast('Скопировано. Отправили клиенту?','✓ Отправила',function(){markSent(el,cid,c.nick)},null,c.tg)}};cr.appendChild(qb)}
+      if(c.tg){var hl=mk('a','btn sm lnkb sq','↗');hl.href=c.tg;hl.target='_blank';hl.rel='noopener';hl.title='Открыть чат клиента';hl.onclick=function(e){e.stopPropagation()};cr.insertBefore(hl,cr.firstChild)}
       cr.appendChild(mk('span','chev'));head.appendChild(cr);
       head.onclick=function(){el.classList.toggle('open');if(el.classList.contains('open'))body.querySelectorAll('textarea.edit').forEach(fit)};
       el.appendChild(head);el.appendChild(body);
