@@ -112,8 +112,8 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .sum .head{font-weight:600;color:var(--ink);font-size:14.5px;margin-bottom:4px}
 .empty{padding:34px 10px;text-align:center;color:var(--ink3)}
 .hide{display:none!important}
-.fab{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:15;display:flex;gap:8px}
-.fab .btn{background:var(--surface);box-shadow:0 8px 24px -8px rgba(29,27,24,.4)}
+.tools{display:flex;gap:8px;margin:0 0 4px}
+.tools .btn{background:var(--surface)}
 @media (max-width:640px){
   header{padding-left:12px;padding-right:12px}
   main{padding:10px 10px 90px}
@@ -137,11 +137,11 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
   </div>
 </header>
 <main>
+  <div class="tools"><button class="btn ghost sm" id="toggleall">Развернуть все</button><button class="btn ghost sm" id="restore" title="Показать карточки и сообщения, которые вы убирали">Вернуть убранные</button></div>
   <details class="how"><summary>Как пользоваться</summary><p>Карточки свёрнуты: нажмите на строку клиента, чтобы раскрыть. «Копировать» в строке копирует первое сообщение (ник уже первой строкой). Текст можно править прямо здесь, правки сохраняются сами (в этом браузере). Жёлтые блоки «Проверить» в сообщение не входят. «Убрать карточку» прячет её у вас, вернуть можно кнопкой «Вернуть убранные».</p></details>
   <div id="root"></div>
   <div id="empty" class="empty hide">Ничего не найдено</div>
 </main>
-<div class="fab"><button class="btn ghost sm" id="toggleall">Развернуть все</button><button class="btn ghost sm" id="restore" title="Показать карточки и сообщения, которые вы убирали">Вернуть убранные</button></div>
 <script>
 window.__main=function(){
   var root=document.getElementById('root');
@@ -240,7 +240,7 @@ window.__main=function(){
       var show=f==='all'||s.dataset.g===f,any=0,all=0;
       s.querySelectorAll('.card').forEach(function(c){all++;var ok=!q||c.dataset.s.indexOf(q)>-1;c.classList.toggle('hide',!ok);if(ok)any++});
       s.querySelector('.cnt').textContent=any;
-      if(tabCounts[s.dataset.g])tabCounts[s.dataset.g].textContent=all;
+      if(tabCounts[s.dataset.g]){tabCounts[s.dataset.g].textContent=all;tabCounts[s.dataset.g].parentNode.classList.toggle('hide',all===0)}
       s.classList.toggle('hide',!show||!any);
       if(show)total+=any;sum+=all;
     });
