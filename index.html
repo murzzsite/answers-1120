@@ -49,6 +49,13 @@ h2.g{margin:30px 0 6px;font-size:20px}
 .st--bad{background:#fde7e5;border-color:#f0b4ae;color:#8a1c14;font-weight:600}
 .st--run{background:#eef2fb;border-color:#cdd8f2;color:#2a5bd7}
 .ph{background:var(--warn);color:var(--warnink);border-radius:4px;padding:0 2px}
+.badge{font-size:12.5px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.badge--a{background:#fff3c4;color:#7a5b00}
+.badge--b{background:#e8f4ec;color:#14532d}
+.badge--c{background:#eaf0fd;color:#2a5bd7}
+.links{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 0}
+.lnk{display:inline-block;padding:7px 12px;border-radius:9px;background:var(--ink);color:#fff;text-decoration:none;font:600 14px system-ui}
+.lnk:hover{background:#2c3a47}
 .hide{display:none}
 @media (max-width:520px){header h1{font-size:16px}}
 </style>
@@ -91,15 +98,17 @@ window.__main=function(){
       row.appendChild(mk('span','nick',c.nick));
       var cn=mk('button','btn sm','Копировать ник');cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
       row.appendChild(mk('span','name',c.name));
+      if(c.stage){row.appendChild(mk('span','badge badge--'+(c.stageCls||'a'),c.stage))}
       var dc=mk('button','btn sm danger','Убрать карточку');dc.onclick=function(){if(confirm('Убрать карточку '+c.nick+'?')){ls('delcard:'+cid,'1');el.remove();apply()}};row.appendChild(dc);
       el.appendChild(row);
       var st=mk('p','status');st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st);
+      if(c.links&&c.links.length){var lr=mk('div','links');c.links.forEach(function(k){var a2=mk('a','lnk',k.l+' ↗');a2.href=k.u;a2.target='_blank';a2.rel='noopener';lr.appendChild(a2);var cb=mk('button','btn sm','Копировать ссылку');cb.onclick=function(){copy(k.u,cb)};lr.appendChild(cb)});el.appendChild(lr)}
       if(c.checks&&c.checks.length){var ul=mk('ul','checks');c.checks.forEach(function(x){var li=mk('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
       if(c.ov){var ob=mk('div','ov');ob.innerHTML='<b>Ответ уже есть в «Отработке возражений».</b> '+c.ov;el.appendChild(ob)}
       (c.msgs||[]).forEach(function(m){
         var mid=cid+'|'+m.l;
         if(ls('del:'+mid)==='1')return;
-        var orig=c.nick+String.fromCharCode(10)+m.t;
+        var orig=(m.t.indexOf(c.nick)===0)?m.t:c.nick+String.fromCharCode(10)+m.t;
         var box=mk('div','msg');
         var mh=mk('div','msg__h');mh.appendChild(mk('b',null,m.l));
         var acts=mk('div','acts');
