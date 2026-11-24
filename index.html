@@ -126,6 +126,9 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .btn.lnkb{background:#fff;color:var(--acc);border:1px solid var(--acc);text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .btn.lnkb:hover{background:var(--accsoft)}
 .btn.sq{padding:7px 10px}
+.tag.hotl{background:#b3261e;color:#fff}
+.card.hotc{border-color:#efc4bf}
+.card.hotc::before{background:var(--bad)}
 .qsec{margin-top:22px}
 .qa{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:0 0 8px;overflow:hidden}
 .qa .qh{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer}
@@ -203,7 +206,7 @@ window.__main=function(){
     g.cards.forEach(function(c){
       var cid=g.id+'|'+c.nick;
       if(ls('delcard:'+cid)==='1')return;
-      var el=mk('article','card');el.dataset.s=(c.nick+' '+c.name).toLowerCase();if(c.waitAt)el.dataset.wait=Date.parse(c.waitAt);
+      var el=mk('article','card');el.dataset.s=(c.nick+' '+c.name).toLowerCase();if(c.waitAt)el.dataset.wait=Date.parse(c.waitAt);if(c.hot){el.dataset.hot='1';el.classList.add('hotc')}
       var row=mk('div','nickrow');
       row.appendChild(mk('span','nick',c.nick));
       var cn=mk('button','btn sm ghost','Копировать ник');cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
@@ -249,6 +252,7 @@ window.__main=function(){
       if(ms&&g.id!=='g_summary')meta.appendChild(mk('span','tag','✉ '+ms));
       if(c.checks&&c.checks.length)meta.appendChild(mk('span','tag w','проверить'));
       if(c.waitAt)meta.insertBefore(mk('span','tag wait','…'),meta.firstChild);
+      if(c.hot)meta.insertBefore(mk('span','tag hotl','🔥 горячий'),meta.firstChild);
       meta.appendChild(mk('span','nm',nm));head.appendChild(meta);
       var cr=mk('div','cright');
       if(g.id!=='g_summary'){var qb=mk('button','btn qc','Копировать');qb.onclick=function(e){e.stopPropagation();var t=body.querySelector('textarea.edit');if(t){copy(t.value,qb);toast('Скопировано. Отправили клиенту?','✓ Отправила',function(){markSent(el,cid,c.nick)},null,c.tg)}};cr.appendChild(qb)}
@@ -259,7 +263,7 @@ window.__main=function(){
       if(g.id==='g_summary')el.classList.add('open');
       sec.appendChild(el);
     });
-    (function(){var cs=[].slice.call(sec.querySelectorAll('.card'));cs.sort(function(a,b){return (+a.dataset.wait||9e15)-(+b.dataset.wait||9e15)});cs.forEach(function(x){sec.appendChild(x)})})();
+    (function(){var cs=[].slice.call(sec.querySelectorAll('.card'));cs.sort(function(a,b){var ha=a.dataset.hot?0:1,hb=b.dataset.hot?0:1;if(ha!==hb)return ha-hb;return (+a.dataset.wait||9e15)-(+b.dataset.wait||9e15)});cs.forEach(function(x){sec.appendChild(x)})})();
     root.appendChild(sec);
   });
   var QA=[];
@@ -291,7 +295,7 @@ window.__main=function(){
     if(f==='quick')total=1;
     nAll.textContent=sum;
     var left=0;document.querySelectorAll('section.grp:not([data-g="g_summary"]) .card:not(.gone)').forEach(function(){left++});
-    document.getElementById('stat').innerHTML='Осталось <b>'+left+'</b> · отправлено сегодня <b>'+sentCount()+'</b>';
+    var ws=[];document.querySelectorAll('section.grp:not([data-g="g_summary"]) .card:not(.gone)[data-wait]').forEach(function(c){ws.push(Date.now()-(+c.dataset.wait))});var over=ws.filter(function(x){return x>3*3600e3}).length;var avg=ws.length?ws.reduce(function(a,b){return a+b},0)/ws.length:0;document.getElementById('stat').innerHTML='Осталось <b>'+left+'</b> · отправлено сегодня <b>'+sentCount()+'</b>'+(ws.length?' · ждут дольше 3 ч: <b style="color:'+(over?'var(--bad)':'var(--ok)')+'">'+over+'</b> · среднее ожидание <b>'+waitTxt(avg)+'</b>':'');
     if(window.__quickApply)window.__quickApply();
     document.getElementById('empty').classList.toggle('hide',total>0);
     document.querySelectorAll('textarea.edit').forEach(fit);
