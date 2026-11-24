@@ -109,6 +109,7 @@ window.__main=function(){
         var mid=cid+'|'+m.l;
         if(ls('del:'+mid)==='1')return;
         var orig=(m.t.indexOf(c.nick)===0)?m.t:c.nick+String.fromCharCode(10)+m.t;
+        (function(){var L=orig.split(String.fromCharCode(10));while(L.length>1&&L[0]===L[1])L.shift();orig=L.join(String.fromCharCode(10))})();
         var box=mk('div','msg');
         var mh=mk('div','msg__h');mh.appendChild(mk('b',null,m.l));
         var acts=mk('div','acts');
