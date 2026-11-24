@@ -57,7 +57,44 @@ h2.g{margin:30px 0 6px;font-size:20px}
 .lnk{display:inline-block;padding:7px 12px;border-radius:9px;background:var(--ink);color:#fff;text-decoration:none;font:600 14px system-ui}
 .lnk:hover{background:#2c3a47}
 .hide{display:none}
-@media (max-width:520px){header h1{font-size:16px}}
+.chip{white-space:nowrap;flex:none}
+html,body{max-width:100%;overflow-x:hidden}
+main,.card,.msg,.msg pre,.status,.checks,.ov,.gnote,.intro{overflow-wrap:anywhere;min-width:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+#chips{display:contents}
+.card{padding:0;overflow:hidden}
+.chead{display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:center;padding:10px 12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.chead:active{background:#f4f6fa}
+.chead .nick{justify-self:start;max-width:100%;font-size:15px;padding:3px 8px}
+.chead .cmeta{grid-column:1;color:var(--ink2);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.chead .cright{grid-column:2;grid-row:1 / span 2;display:flex;align-items:center;gap:8px}
+.chead .btn.sm{padding:6px 10px}
+.chev{width:10px;height:10px;border-right:2px solid var(--ink2);border-bottom:2px solid var(--ink2);transform:rotate(45deg);transition:transform .15s;margin:0 4px 3px 2px}
+.card.open .chev{transform:rotate(-135deg);margin-bottom:-3px}
+.cbody{display:none;padding:0 14px 14px;border-top:1px solid var(--line)}
+.card.open .cbody{display:block}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:999px;background:var(--accbg);color:var(--acc);margin-right:4px}
+.tag--w{background:var(--warn);color:var(--warnink)}
+.card{margin-bottom:8px}
+.intro summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.intro{padding:10px 14px}
+h2.g{margin:22px 0 6px;font-size:18px}
+@media (max-width:640px){
+ header{padding:8px 10px}
+ header h1{font-size:15px;margin:0 0 6px}
+ #q{min-width:0;width:100%;padding:8px 10px;font-size:16px}
+ .chips{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:6px -10px 0;padding:0 10px 2px}
+ .chips::-webkit-scrollbar{display:none}
+ .chip{padding:6px 10px;font-size:13.5px}
+ main{padding:10px 10px 70px}
+ .statusbar{gap:5px;margin-bottom:8px}
+ .st{font-size:12px;padding:4px 8px}
+ .msg__h{flex-wrap:wrap}
+ .acts{justify-content:flex-start}
+ .msg pre,.msg textarea.edit{font-size:15px}
+ .cbody{padding:0 10px 12px}
+ .nickrow .name{flex-basis:100%}
+}
 </style>
 </head>
 <body>
@@ -65,12 +102,12 @@ h2.g{margin:30px 0 6px;font-size:20px}
   <h1>Ответы клиентам · 20.11</h1>
   <div class="bar">
     <input id="q" type="search" placeholder="Поиск по нику или имени">
-    <span id="chips"></span><button class="chip" id="restore" title="Показать карточки и сообщения, которые вы убирали">Вернуть убранные</button>
   </div>
+  <div class="chips"><span id="chips"></span><button class="chip" id="toggleall">Развернуть все</button><button class="chip" id="restore" title="Показать карточки и сообщения, которые вы убирали">Вернуть убранные</button></div>
 </header>
 <main>
   <div id="status" class="statusbar"></div>
-  <div class="intro">Над каждым ответом стоит <b>ник клиента</b>: туда его и копировать. Текст в рамке можно <b>править прямо здесь</b>: правки сохраняются сами (в этом браузере), кнопки «Сохранить», «Сбросить» (вернуть исходный) и «Удалить». Ник клиента уже стоит первой строкой сообщения: «Копировать» берёт всё сразу. Жёлтые блоки «Проверить» в сообщение не входят.</div>
+  <details class="intro"><summary>Как пользоваться</summary>Над каждым ответом стоит <b>ник клиента</b>: туда его и копировать. Текст в рамке можно <b>править прямо здесь</b>: правки сохраняются сами (в этом браузере), кнопки «Сохранить», «Сбросить» (вернуть исходный) и «Удалить». Ник клиента уже стоит первой строкой сообщения: «Копировать» берёт всё сразу. Жёлтые блоки «Проверить» в сообщение не входят. Карточки свёрнуты: нажмите на ник, чтобы раскрыть; кнопка «Копировать» в свёрнутой строке копирует первое сообщение.</details>
   <div id="root"></div>
 </main>
 <script>
@@ -88,7 +125,7 @@ window.__main=function(){
   function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
   window.GROUPS.forEach(function(g){
     var sec=mk('section');sec.dataset.g=g.id;
-    sec.appendChild(mk('h2','g',g.title));
+    var shown=g.cards.filter(function(c){return ls('delcard:'+g.id+'|'+c.nick)!=='1'}).length;sec.appendChild(mk('h2','g',g.title+' · '+shown));
     if(g.note)sec.appendChild(mk('p','gnote',g.note));
     g.cards.forEach(function(c){
       var cid=g.id+'|'+c.nick;
@@ -127,6 +164,18 @@ window.__main=function(){
         mh.appendChild(acts);box.appendChild(mh);box.appendChild(ta);el.appendChild(box);
         setTimeout(function(){fit(ta)},0);
       });
+      var body=mk('div','cbody');while(el.firstChild)body.appendChild(el.firstChild);
+      var head=mk('div','chead');head.appendChild(mk('span','nick',c.nick));
+      var meta=mk('div','cmeta');var nm=(c.name||'').replace(/^❗\s*/,'');
+      var ms=(c.msgs||[]).length;
+      if(ms){var t1=mk('span','tag','✉ '+ms);meta.appendChild(t1)}
+      if(c.checks&&c.checks.length){meta.appendChild(mk('span','tag tag--w','проверить'))}
+      meta.appendChild(document.createTextNode(nm));head.appendChild(meta);
+      var cr=mk('div','cright');
+      var qb=mk('button','btn sm','Копировать');qb.onclick=function(e){e.stopPropagation();var t=body.querySelector('textarea.edit');if(t)copy(t.value,qb)};cr.appendChild(qb);
+      cr.appendChild(mk('span','chev'));head.appendChild(cr);
+      head.onclick=function(){el.classList.toggle('open');if(el.classList.contains('open'))body.querySelectorAll('textarea.edit').forEach(fit)};
+      el.appendChild(head);el.appendChild(body);
       sec.appendChild(el);
     });
     root.appendChild(sec);
@@ -134,6 +183,8 @@ window.__main=function(){
   var chips=document.getElementById('chips');
   [['all','Все']].concat(window.GROUPS.map(function(g){return [g.id,g.chip||g.title]})).forEach(function(p,i){var b=mk('button','chip'+(i?'':' on'),p[1]);b.dataset.f=p[0];chips.appendChild(b)});
   document.getElementById('restore').onclick=function(){try{Object.keys(localStorage).filter(function(k){return k.indexOf(KEY+'delcard:')===0||k.indexOf(KEY+'del:')===0}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}location.reload()};
+  var allOpen=false;
+  document.getElementById('toggleall').onclick=function(){allOpen=!allOpen;document.querySelectorAll('.card').forEach(function(c){c.classList.toggle('open',allOpen)});this.textContent=allOpen?'Свернуть все':'Развернуть все';document.querySelectorAll('textarea.edit').forEach(fit)};
   var f='all',q='';
   function apply(){
     document.querySelectorAll('section[data-g]').forEach(function(s){
@@ -143,8 +194,8 @@ window.__main=function(){
     });
     document.querySelectorAll('textarea.edit').forEach(fit);
   }
-  document.querySelectorAll('.chip').forEach(function(b){b.onclick=function(){document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});b.classList.add('on');f=b.dataset.f;apply()}});
-  document.getElementById('q').addEventListener('input',function(e){q=e.target.value.trim().toLowerCase();apply()});
+  document.querySelectorAll('#chips .chip').forEach(function(b){b.onclick=function(){document.querySelectorAll('#chips .chip').forEach(function(x){x.classList.remove('on')});b.classList.add('on');f=b.dataset.f;apply()}});
+  document.getElementById('q').addEventListener('input',function(e){q=e.target.value.trim().toLowerCase();apply();if(q){var v=document.querySelectorAll('.card:not(.hide)');if(v.length===1)v[0].classList.add('open')}});
 };
 (function(){
   var need=2,done=0,t=Date.now();
