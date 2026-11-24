@@ -112,6 +112,26 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .sum .head{font-weight:600;color:var(--ink);font-size:14.5px;margin-bottom:4px}
 .empty{padding:34px 10px;text-align:center;color:var(--ink3)}
 .hide{display:none!important}
+.card.gone{display:none}
+.tag.wait{background:#eef0f3;color:#4b5563}
+.tag.wait.mid{background:var(--warnsoft);color:var(--warn)}
+.tag.wait.hot{background:var(--badsoft);color:var(--bad)}
+.btn.okbtn{background:var(--ok)}.btn.okbtn:hover{background:#17653f}
+.stat{font-size:13px;color:var(--ink2);align-self:center;margin-left:auto;white-space:nowrap}
+.stat b{color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;z-index:50;background:var(--ink);color:#fff;border-radius:14px;padding:10px 12px 10px 16px;display:flex;gap:12px;align-items:center;font-size:14px;box-shadow:0 12px 32px -10px rgba(0,0,0,.5);transition:all .2s;max-width:92vw}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+.toast .btn{background:#fff;color:var(--ink);padding:7px 12px;font-size:13px}
+.toast .btn.ok{background:#22a35a;color:#fff}
+.qsec{margin-top:22px}
+.qa{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:0 0 8px;overflow:hidden}
+.qa .qh{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer}
+.qa .qh:hover{background:var(--surface2)}
+.qa .qt{flex:1;min-width:0;font-weight:600;font-size:14.5px;line-height:1.35}
+.qa .qc{flex:none;font-size:11.5px;color:var(--ink3);max-width:28%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qa pre{display:none;margin:0;padding:12px 14px;border-top:1px solid var(--line);white-space:pre-wrap;word-break:break-word;font:15px/1.55 Onest,system-ui,sans-serif;background:#fff}
+.qa.open pre{display:block}
+.qhint{color:var(--ink3);font-size:13.5px;margin:0 0 10px 14px}
 .tools{display:flex;gap:8px;margin:0 0 4px}
 .tools .btn{background:var(--surface)}
 @media (max-width:640px){
@@ -137,10 +157,11 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
   </div>
 </header>
 <main>
-  <div class="tools"><button class="btn ghost sm" id="toggleall">Развернуть все</button><button class="btn ghost sm" id="restore" title="Показать карточки и сообщения, которые вы убирали">Вернуть убранные</button></div>
+  <div class="tools"><button class="btn ghost sm" id="toggleall">Развернуть все</button><button class="btn ghost sm" id="restore" title="Показать карточки и сообщения, которые вы убирали">Вернуть убранные</button><span class="stat" id="stat"></span></div>
   <details class="how"><summary>Как пользоваться</summary><p>Карточки свёрнуты: нажмите на строку клиента, чтобы раскрыть. «Копировать» в строке копирует первое сообщение (ник уже первой строкой). Текст можно править прямо здесь, правки сохраняются сами (в этом браузере). Жёлтые блоки «Проверить» в сообщение не входят. «Убрать карточку» прячет её у вас, вернуть можно кнопкой «Вернуть убранные».</p></details>
   <div id="root"></div>
   <div id="empty" class="empty hide">Ничего не найдено</div>
+<div class="toast" id="toast"><span id="tmsg"></span><button class="btn ok" id="tok" style="display:none"></button><button class="btn" id="tundo" style="display:none">Отменить</button></div>
 </main>
 <script>
 window.__main=function(){
@@ -155,6 +176,12 @@ window.__main=function(){
   }
   function fit(t){t.style.height='auto';t.style.height=(t.scrollHeight+4)+'px'}
   function mk(tag,cls,txt){var e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e}
+  function today(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+  function sentCount(){return +(ls('sent:'+today())||0)}
+  var tt;function toast(msg,okLabel,okFn,undoFn){var t=document.getElementById('toast'),ok=document.getElementById('tok'),un=document.getElementById('tundo');document.getElementById('tmsg').textContent=msg;ok.style.display=okLabel?'':'none';if(okLabel)ok.textContent=okLabel;un.style.display=undoFn?'':'none';ok.onclick=function(){t.classList.remove('on');if(okFn)okFn()};un.onclick=function(){t.classList.remove('on');if(undoFn)undoFn()};t.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('on')},okLabel?7000:5000)}
+  function markSent(el,cid,nick){ls('delcard:'+cid,'1');el.classList.add('gone');ls('sent:'+today(),String(sentCount()+1));apply();toast('Отмечено как отправленное: '+nick,null,null,function(){ls('delcard:'+cid,null);el.classList.remove('gone');ls('sent:'+today(),String(Math.max(0,sentCount()-1)));apply()})}
+  function waitTxt(ms){var m=Math.floor(ms/60000);if(m<1)return 'только что';if(m<60)return m+' мин';var h=Math.floor(m/60);if(h<24)return h+' ч'+(m%60?' '+(m%60)+' м':'');var d=Math.floor(h/24);return d+' дн '+(h%24)+' ч'}
+  function paintWaits(){var now=Date.now();document.querySelectorAll('.card[data-wait]').forEach(function(c){var w=+c.dataset.wait;if(!w)return;var el=c.querySelector('.tag.wait');if(!el)return;var ms=now-w;el.textContent='ждёт '+waitTxt(ms);el.classList.toggle('hot',ms>3*3600e3);el.classList.toggle('mid',ms>3600e3&&ms<=3*3600e3)})}
   function sumCard(m){
     var wrap=mk('div','sum');var lines=m.t.split('\n').filter(function(x){return x.trim()});
     var rows=[];
@@ -171,11 +198,11 @@ window.__main=function(){
     g.cards.forEach(function(c){
       var cid=g.id+'|'+c.nick;
       if(ls('delcard:'+cid)==='1')return;
-      var el=mk('article','card');el.dataset.s=(c.nick+' '+c.name).toLowerCase();
+      var el=mk('article','card');el.dataset.s=(c.nick+' '+c.name).toLowerCase();if(c.waitAt)el.dataset.wait=Date.parse(c.waitAt);
       var row=mk('div','nickrow');
       row.appendChild(mk('span','nick',c.nick));
       var cn=mk('button','btn sm ghost','Копировать ник');cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
-      var dc=mk('button','btn sm danger','Убрать карточку');dc.onclick=function(){if(confirm('Убрать карточку '+c.nick+'?')){ls('delcard:'+cid,'1');el.remove();apply()}};row.appendChild(dc);
+      var dc=mk('button','btn sm okbtn','✓ Отправила');dc.onclick=function(){markSent(el,cid,c.nick)};row.appendChild(dc);
       el.appendChild(row);
       if(c.status){var st=mk('p','status');st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st)}
       if(c.links&&c.links.length){var lr=mk('div','links');c.links.forEach(function(k){var a2=mk('a','lnk',k.l+' ↗');a2.href=k.u;a2.target='_blank';a2.rel='noopener';lr.appendChild(a2);var cb=mk('button','btn sm ghost','Копировать ссылку');cb.onclick=function(){copy(k.u,cb)};lr.appendChild(cb)});el.appendChild(lr)}
@@ -215,22 +242,32 @@ window.__main=function(){
       if(c.stage)meta.appendChild(mk('span','tag g',c.stage));
       if(ms&&g.id!=='g_summary')meta.appendChild(mk('span','tag','✉ '+ms));
       if(c.checks&&c.checks.length)meta.appendChild(mk('span','tag w','проверить'));
+      if(c.waitAt)meta.insertBefore(mk('span','tag wait','…'),meta.firstChild);
       meta.appendChild(mk('span','nm',nm));head.appendChild(meta);
       var cr=mk('div','cright');
-      if(g.id!=='g_summary'){var qb=mk('button','btn qc','Копировать');qb.onclick=function(e){e.stopPropagation();var t=body.querySelector('textarea.edit');if(t)copy(t.value,qb)};cr.appendChild(qb)}
+      if(g.id!=='g_summary'){var qb=mk('button','btn qc','Копировать');qb.onclick=function(e){e.stopPropagation();var t=body.querySelector('textarea.edit');if(t){copy(t.value,qb);toast('Скопировано. Отправили клиенту?','✓ Отправила',function(){markSent(el,cid,c.nick)})}};cr.appendChild(qb)}
       cr.appendChild(mk('span','chev'));head.appendChild(cr);
       head.onclick=function(){el.classList.toggle('open');if(el.classList.contains('open'))body.querySelectorAll('textarea.edit').forEach(fit)};
       el.appendChild(head);el.appendChild(body);
       if(g.id==='g_summary')el.classList.add('open');
       sec.appendChild(el);
     });
+    (function(){var cs=[].slice.call(sec.querySelectorAll('.card'));cs.sort(function(a,b){return (+a.dataset.wait||9e15)-(+b.dataset.wait||9e15)});cs.forEach(function(x){sec.appendChild(x)})})();
     root.appendChild(sec);
   });
+  var QA=[];
+  try{[typeof HAND!=='undefined'?HAND:[],typeof IMPORT!=='undefined'?IMPORT:[],typeof HAND2!=='undefined'?HAND2:[]].forEach(function(arr){arr.forEach(function(e){var t=e.v&&e.v[0]&&e.v[0].t;if(!t||!e.title)return;QA.push({t:e.title,c:e.cat||'',x:t,s:((e.title||'')+' '+(e.kw||[]).join(' ')+' '+(e.ex||[]).join(' ')+' '+t).toLowerCase()})})})}catch(err){}
+  var qsec=mk('section','qsec hide');qsec.dataset.g='quick';
+  (function(){var gh=mk('div','gh');gh.appendChild(mk('span','bar'));gh.appendChild(mk('h2',null,'Быстрые ответы (из Отработки возражений)'));qsec.appendChild(gh);qsec.appendChild(mk('p','qhint','Введите слово в поиск: «домен», «Директ», «возврат», «Госуслуги», «биржа». Нажмите на ответ, чтобы раскрыть, или сразу «Копировать».'));
+    QA.forEach(function(a){var it=mk('div','qa');it.dataset.s=a.s;var h=mk('div','qh');h.appendChild(mk('span','qt',a.t));h.appendChild(mk('span','qc',a.c));var cb=mk('button','btn sm','Копировать');cb.onclick=function(e){e.stopPropagation();copy(a.x,cb)};h.appendChild(cb);var pre=mk('pre',null,a.x);h.onclick=function(){it.classList.toggle('open')};it.appendChild(h);it.appendChild(pre);qsec.appendChild(it)});
+    root.appendChild(qsec)})();
+  window.__quickApply=function(){var on=(f==='quick')||(f==='all'&&q.length>=3);qsec.classList.toggle('hide',!on||!QA.length);if(!on)return;var shown=0,lim=f==='quick'?60:6;qsec.querySelectorAll('.qa').forEach(function(it){var ok=q?it.dataset.s.indexOf(q)>-1:true;if(ok&&shown<lim){shown++;it.classList.remove('hide')}else it.classList.add('hide')});qsec.querySelector('.qhint').classList.toggle('hide',!!q&&f==='all');if(f==='all'&&!shown)qsec.classList.add('hide')};
   var tabs=document.getElementById('tabs');
   var f='all',q='';
   function mkTab(id,label){var b=mk('button','tab'+(id==='all'?' on':''));b.dataset.f=id;b.appendChild(document.createTextNode(label));var n=mk('b',null,'0');b.appendChild(n);b.onclick=function(){tabs.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});b.classList.add('on');f=id;apply();window.scrollTo({top:0,behavior:'smooth'})};tabs.appendChild(b);return n}
   var nAll=mkTab('all','Все');
   var tabCounts={};window.GROUPS.forEach(function(g){tabCounts[g.id]=mkTab(g.id,g.chip||g.title)});
+  var qn=mkTab('quick','Быстрые ответы');qn.textContent=QA.length;
   document.getElementById('restore').onclick=function(){try{Object.keys(localStorage).filter(function(k){return k.indexOf(KEY+'delcard:')===0||k.indexOf(KEY+'del:')===0}).forEach(function(k){localStorage.removeItem(k)})}catch(e){}location.reload()};
   var allOpen=false;
   document.getElementById('toggleall').onclick=function(){allOpen=!allOpen;document.querySelectorAll('.card').forEach(function(c){c.classList.toggle('open',allOpen)});this.textContent=allOpen?'Свернуть все':'Развернуть все';document.querySelectorAll('textarea.edit').forEach(fit)};
@@ -238,21 +275,27 @@ window.__main=function(){
     var total=0,sum=0;
     document.querySelectorAll('section.grp').forEach(function(s){
       var show=f==='all'||s.dataset.g===f,any=0,all=0;
-      s.querySelectorAll('.card').forEach(function(c){all++;var ok=!q||c.dataset.s.indexOf(q)>-1;c.classList.toggle('hide',!ok);if(ok)any++});
+      s.querySelectorAll('.card:not(.gone)').forEach(function(c){all++;var ok=!q||c.dataset.s.indexOf(q)>-1;c.classList.toggle('hide',!ok);if(ok)any++});
       s.querySelector('.cnt').textContent=any;
       if(tabCounts[s.dataset.g]){tabCounts[s.dataset.g].textContent=all;tabCounts[s.dataset.g].parentNode.classList.toggle('hide',all===0)}
       s.classList.toggle('hide',!show||!any);
       if(show)total+=any;sum+=all;
     });
+    if(f==='quick')total=1;
     nAll.textContent=sum;
+    var left=0;document.querySelectorAll('section.grp:not([data-g="g_summary"]) .card:not(.gone)').forEach(function(){left++});
+    document.getElementById('stat').innerHTML='Осталось <b>'+left+'</b> · отправлено сегодня <b>'+sentCount()+'</b>';
+    if(window.__quickApply)window.__quickApply();
     document.getElementById('empty').classList.toggle('hide',total>0);
     document.querySelectorAll('textarea.edit').forEach(fit);
+    paintWaits();
   }
   document.getElementById('q').addEventListener('input',function(e){q=e.target.value.trim().toLowerCase();apply();if(q){var v=document.querySelectorAll('.card:not(.hide)');if(v.length===1)v[0].classList.add('open')}});
   apply();
+  setInterval(paintWaits,60000);
 };
 (function(){
-  var need=2,done=0,t=Date.now();
+  var need=5,done=0,t=Date.now();
   function fin(){done++;if(done<need)return;window.__main();renderStatus()}
   function load(src){var e=document.createElement('script');e.src=src+'?t='+t;e.onload=fin;e.onerror=fin;document.head.appendChild(e)}
   function two(n){return String(n).length<2?'0'+n:String(n)}
@@ -268,7 +311,7 @@ window.__main=function(){
     }
     box.innerHTML=one('Telegram',S.telegram)+one('Tripwire',S.tripwire);
   }
-  load('data.js');load('status.js');
+  load('data.js');load('status.js');load('https://murzzsite.github.io/objection-search/kb_hand.js');load('https://murzzsite.github.io/objection-search/kb_import.js');load('https://murzzsite.github.io/objection-search/kb_extra.js');
 })();
 </script>
 </body>
