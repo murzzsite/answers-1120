@@ -116,6 +116,7 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .tag.wait{background:#eef0f3;color:#4b5563}
 .tag.wait.mid{background:var(--warnsoft);color:var(--warn)}
 .tag.wait.hot{background:var(--badsoft);color:var(--bad)}
+.btn.rwbtn{background:#fff;color:#b3261e;border:1px solid #b3261e}.btn.rwbtn:hover{background:#fdeceb}.rwbanner{margin:8px 12px;padding:8px 12px;border-radius:8px;background:#fdeceb;color:#8c1d18;font-size:13px;font-weight:600}
 .btn.okbtn{background:var(--ok)}.btn.okbtn:hover{background:#17653f}
 .stat{font-size:13px;color:var(--ink2);align-self:center;margin-left:auto;white-space:nowrap}
 .stat b{color:var(--ink)}
@@ -212,7 +213,10 @@ window.__main=function(){
       var cn=mk('button','btn sm ghost','Копировать ник');cn.onclick=function(){copy(c.nick,cn)};row.appendChild(cn);
       if(c.tg){var ol=mk('a','btn sm lnkb','Открыть чат ↗');ol.href=c.tg;ol.target='_blank';ol.rel='noopener';row.insertBefore(ol,row.firstChild)}
       var dc=mk('button','btn sm okbtn','✓ Отправила');dc.onclick=function(){markSent(el,cid,c.nick)};row.appendChild(dc);
+      var rwb=mk('button','btn sm rwbtn','Ответ не подходит');rwb.onclick=function(){var why=window.prompt('Что не так с ответом? Одной строкой (например: клиент уже написал новое / нужен бот, а не гайд)');if(why===null||!why.trim())return;why=why.trim();var txt='ПЕРЕПИСАТЬ '+c.nick+' | '+why;ls('rw:'+cid,why);copy(txt,rwb);var bn=el.querySelector('.rwbanner');if(!bn){bn=mk('div','rwbanner');el.insertBefore(bn,el.children[1])}bn.textContent='Отправлено на переписывание: '+why+'. Старый ответ клиенту не отправляй.';toast('Текст скопирован. Откроется Telegram: отправь его себе в «Избранное», автоцикл заберёт.',null,null,null,null);setTimeout(function(){window.open('https://t.me/workakkauntt?text='+encodeURIComponent(txt),'_blank')},600)};row.appendChild(rwb);
+      var rwWhy=ls('rw:'+cid);
       el.appendChild(row);
+      if(rwWhy){var rb=mk('div','rwbanner');rb.textContent='Отправлено на переписывание: '+rwWhy+'. Старый ответ клиенту не отправляй.';el.appendChild(rb)}
       if(c.status){var st=mk('p','status');st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st)}
       if(c.links&&c.links.length){var lr=mk('div','links');c.links.forEach(function(k){var a2=mk('a','lnk',k.l+' ↗');a2.href=k.u;a2.target='_blank';a2.rel='noopener';lr.appendChild(a2);var cb=mk('button','btn sm ghost','Копировать ссылку');cb.onclick=function(){copy(k.u,cb)};lr.appendChild(cb)});el.appendChild(lr)}
       if(c.checks&&c.checks.length){var ul=mk('ul','checks');c.checks.forEach(function(x){var li=mk('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
