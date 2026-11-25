@@ -118,6 +118,7 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .tag.wait.hot{background:var(--badsoft);color:var(--bad)}
 .btn.rwbtn{background:#fff;color:#b3261e;border:1px solid #b3261e}.btn.rwbtn:hover{background:#fdeceb}.rwbanner{margin:8px 12px;padding:8px 12px;border-radius:8px;background:#fdeceb;color:#8c1d18;font-size:13px;font-weight:600}
 .sum .shead{margin:16px 0 6px;font-weight:800;font-size:13px;letter-spacing:.06em;color:var(--ink,#1c1917)}.sum .slist{margin:0 0 6px 18px;padding:0;font-size:14px;line-height:1.5}.sum .stext{margin:4px 0;font-size:14px;line-height:1.5}
+.seen{margin:6px 12px;padding:8px 12px 8px 28px;border-radius:8px;background:#eef6ee;color:#17402a;font-size:13px;line-height:1.5}.seen b{font-weight:700}
 .btn.okbtn{background:var(--ok)}.btn.okbtn:hover{background:#17653f}
 .stat{font-size:13px;color:var(--ink2);align-self:center;margin-left:auto;white-space:nowrap}
 .stat b{color:var(--ink)}
@@ -227,6 +228,7 @@ window.__main=function(){
       if(rwWhy){var rb=mk('div','rwbanner');rb.textContent='Отправлено на переписывание: '+rwWhy+'. Старый ответ клиенту не отправляй.';el.appendChild(rb)}
       if(c.status){var st=mk('p','status');st.innerHTML='<b>Ситуация.</b> '+esc(c.status);el.appendChild(st)}
       if(c.links&&c.links.length){var lr=mk('div','links');c.links.forEach(function(k){var a2=mk('a','lnk',k.l+' ↗');a2.href=k.u;a2.target='_blank';a2.rel='noopener';lr.appendChild(a2);var cb=mk('button','btn sm ghost','Копировать ссылку');cb.onclick=function(){copy(k.u,cb)};lr.appendChild(cb)});el.appendChild(lr)}
+      if(c.seen&&c.seen.length){var sn=mk('ul','seen');c.seen.forEach(function(x){var li=mk('li');li.innerHTML='<b>Уже было:</b> '+esc(x);sn.appendChild(li)});el.appendChild(sn)}
       if(c.checks&&c.checks.length){var ul=mk('ul','checks');c.checks.forEach(function(x){var li=mk('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
       if(c.ov){var ob=mk('div','ov');ob.innerHTML='<b>Ответ уже есть в «Отработке возражений».</b> '+c.ov;el.appendChild(ob)}
       (c.msgs||[]).forEach(function(m){
