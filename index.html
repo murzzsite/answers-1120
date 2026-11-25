@@ -204,7 +204,7 @@ window.__main=function(){
     var gh=mk('div','gh');gh.appendChild(mk('span','bar'));gh.appendChild(mk('h2',null,g.title));gh.appendChild(mk('span','cnt','0'));sec.appendChild(gh);
     if(g.note)sec.appendChild(mk('p','gnote',g.note));
     g.cards.forEach(function(c){
-      var cid=g.id+'|'+c.nick;
+      var cid=g.id+'|'+c.nick+'|'+(c.waitAt||'')+'|'+((c.msgs&&c.msgs[0]&&c.msgs[0].t)||'').length;
       if(ls('delcard:'+cid)==='1')return;
       var el=mk('article','card');el.dataset.s=(c.nick+' '+c.name).toLowerCase();if(c.waitAt)el.dataset.wait=Date.parse(c.waitAt);if(c.hot){el.dataset.hot='1';el.classList.add('hotc')}
       var row=mk('div','nickrow');
