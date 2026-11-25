@@ -202,7 +202,7 @@ window.__main=function(){
       var t=l.trim();if(!t){list=null;return}
       var mm=t.match(/^(.+?)\s+[-—]\s+(\d+)\s+(раз|сообщ\S*|шт)/);
       if(mm){list=null;var row=mk('div','row');row.appendChild(mk('span','n',mm[1]));var tr=mk('div','track');var i2=document.createElement('i');i2.style.width=(+mm[2]/max*100)+'%';tr.appendChild(i2);row.appendChild(tr);row.appendChild(mk('b',null,mm[2]));wrap.appendChild(row);return}
-      if(/^[A-ZА-ЯЁ]{3,}[A-ZА-ЯЁ0-9 .:,\/+\-]*(\s*\([^)]*\))?$/.test(t)){list=null;wrap.appendChild(mk('div','shead',t));return}
+      if(/^[A-ZА-ЯЁ]{2,}[A-ZА-ЯЁ0-9 .:,\/+\-]*(\s*\([^)]*\))?$/.test(t)){list=null;wrap.appendChild(mk('div','shead',t));return}
       if(t.indexOf('- ')===0){if(!list){list=mk('ul','slist');wrap.appendChild(list)}list.appendChild(mk('li',null,t.slice(2)));return}
       list=null;wrap.appendChild(mk('p','stext',t));
     });
