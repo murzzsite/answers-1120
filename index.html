@@ -153,7 +153,11 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
   .cbody{padding:2px 12px 14px}
   .btn.qc{padding:8px 11px;font-size:13px}
   .cmeta .tag:not(.wait):not(.w):not(.b):not(.g){display:none}
-  .cmeta .nm{flex:0 1 auto}
+  .cmeta{flex-wrap:wrap;row-gap:3px}
+  .cmeta .nm{flex:1 1 100%;order:2}
+  .cright{gap:6px}
+  .chead{column-gap:8px}
+  .tools{flex-wrap:wrap;align-items:center}
   .msg textarea.edit{font-size:16px}
   .sum .row{grid-template-columns:minmax(0,1.2fr) minmax(0,.9fr) 28px}
 }
