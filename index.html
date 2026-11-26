@@ -103,7 +103,7 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .msg textarea.edit{display:block;width:100%;border:0;outline:0;resize:none;padding:14px;font:15.5px/1.6 Onest,system-ui,sans-serif;color:var(--ink);background:#fff;min-height:110px}
 .msg textarea.edit:focus{background:#fcfcff;box-shadow:inset 0 0 0 2px var(--accsoft)}
 .mbar{display:flex;gap:6px;flex-wrap:wrap;padding:8px 12px;border-top:1px solid var(--line);background:var(--surface2)}
-.sum{margin-top:12px;display:grid;gap:7px}
+.sum{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0;overflow-wrap:anywhere}
 .sum .row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) 34px;align-items:center;gap:10px;font-size:14px}
 .sum .row span.n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:"JetBrains Mono",monospace;font-size:13px}
 .sum .row .track{height:8px;border-radius:99px;background:var(--surface2);overflow:hidden}
