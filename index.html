@@ -142,6 +142,12 @@ section[data-g="g_guides"]{--gc:var(--g-guides)}section[data-g="g_sites"],sectio
 .qa.open pre{display:block}
 .qhint{color:var(--ink3);font-size:13.5px;margin:0 0 10px 14px}
 .tools{display:flex;gap:8px;margin:0 0 4px}
+.more{margin:14px 0 0;border:1px dashed var(--line2);border-radius:12px;background:var(--surface2)}
+.more>summary{cursor:pointer;padding:10px 12px;font-weight:600;color:var(--ink2);font-size:14px}
+.more[open]>summary{border-bottom:1px dashed var(--line2)}
+.more>*:not(summary){margin-left:12px;margin-right:12px}
+.more>.morebtns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 12px 12px}
+.hintline{margin:10px 0 6px;color:var(--ink2);font-size:14px;background:var(--accsoft);border-radius:10px;padding:8px 12px}
 .tools .btn{background:var(--surface)}
 @media (max-width:640px){
   header{padding-left:12px;padding-right:12px}
@@ -235,14 +241,14 @@ window.__main=function(){
       if(c.seen&&c.seen.length){var sn=mk('ul','seen');c.seen.forEach(function(x){var li=mk('li');li.innerHTML='<b>Уже было:</b> '+esc(x);sn.appendChild(li)});el.appendChild(sn)}
       if(c.checks&&c.checks.length){var ul=mk('ul','checks');c.checks.forEach(function(x){var li=mk('li');li.innerHTML='<b>Проверить:</b> '+esc(x);ul.appendChild(li)});el.appendChild(ul)}
       if(c.ov){var ob=mk('div','ov');ob.innerHTML='<b>Ответ уже есть в «Отработке возражений».</b> '+c.ov;el.appendChild(ob)}
-      (c.msgs||[]).forEach(function(m){
+      (c.msgs||[]).forEach(function(m,mi){
         var mid=cid+'|'+m.l;
         if(ls('del:'+mid)==='1')return;
         if(g.id==='g_summary'){el.appendChild(sumCard(m));return}
         var orig=(m.t.indexOf(c.nick)===0)?m.t:c.nick+String.fromCharCode(10)+m.t;
         (function(){var L=orig.split(String.fromCharCode(10));while(L.length>1&&L[0]===L[1])L.shift();orig=L.join(String.fromCharCode(10))})();
         var box=mk('div','msg');
-        var mh=mk('div','msg__h');mh.appendChild(mk('b',null,m.l));
+        var mh=mk('div','msg__h');var nmsg=(c.msgs||[]).length;var lab=m.l;if(g.id!=='g_summary'){if(/^Дополнительно от нас/.test(m.l))lab='Вторым сообщением, после основного: '+m.l;else if(nmsg>1)lab='Сообщение '+(mi+1)+' из '+nmsg+': '+m.l}mh.appendChild(mk('b',null,lab));
         var acts=mk('div','acts');
         var ta=mk('textarea','edit');ta.spellcheck=false;
         var st2=mk('span','saved','');
@@ -260,6 +266,14 @@ window.__main=function(){
         mb.appendChild(bs);mb.appendChild(br);mb.appendChild(bd);box.appendChild(mb);el.appendChild(box);
         setTimeout(function(){fit(ta)},0);
       });
+      if(g.id!=='g_summary'){
+        var det=mk('details','more');det.appendChild(mk('summary',null,'Подробнее для себя (необязательно)'));
+        ['status','links','seen','checks','ov','rwbanner'].forEach(function(k){[].slice.call(el.querySelectorAll(':scope > .'+k)).forEach(function(x){if(k!=='rwbanner')det.appendChild(x)})});
+        var rr=mk('div','morebtns');rr.appendChild(cn);rr.appendChild(rwb);det.appendChild(rr);
+        var hint=mk('p','hintline','Как отправить: откройте чат ↗, нажмите «Копировать», вставьте в чат клиента, потом нажмите «✓ Отправила».');
+        var firstMsg=el.querySelector(':scope > .msg');if(firstMsg)el.insertBefore(hint,firstMsg);
+        el.appendChild(det);
+      }
       var body=mk('div','cbody');while(el.firstChild)body.appendChild(el.firstChild);
       var head=mk('div','chead');head.appendChild(mk('span','nick',c.nick));
       var meta=mk('div','cmeta');
@@ -268,7 +282,7 @@ window.__main=function(){
       if(g.id==='g_boss')meta.appendChild(mk('span','tag b','руководителю'));
       if(c.stage)meta.appendChild(mk('span','tag g',c.stage));
       if(ms&&g.id!=='g_summary')meta.appendChild(mk('span','tag','✉ '+ms));
-      if(c.checks&&c.checks.length)meta.appendChild(mk('span','tag w','проверить'));
+      if((c.msgs||[]).some(function(m){return /^Дополнительно от нас/.test(m.l)}))meta.appendChild(mk('span','tag g','+ доп. от нас'));
       if(c.waitAt)meta.insertBefore(mk('span','tag wait','…'),meta.firstChild);
       if(c.hot)meta.insertBefore(mk('span','tag hotl','🔥 горячий'),meta.firstChild);
       meta.appendChild(mk('span','nm',nm));head.appendChild(meta);
