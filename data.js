@@ -544,6 +544,26 @@ window.GROUPS = [
   "title": "Гайды: отправить клиенту",
   "cards": [
    {
+    "nick": "@anastasiyakondratyeva",
+    "name": "@anastasiyakondratyeva",
+    "stage": "Правки внесены",
+    "stageCls": "c",
+    "status": "",
+    "links": [
+     {
+      "l": "Открыть гайд",
+      "u": "https://guide-generator.leestygpt.workers.dev/g/kondratyeva-7-lovushek.pdf"
+     }
+    ],
+    "checks": [],
+    "msgs": [
+     {
+      "l": "Гайд после правок: отправить клиенту",
+      "t": "Здравствуйте! @anastasiyakondratyeva\n\nГотов обновлённый гайд с учётом ваших правок: https://guide-generator.leestygpt.workers.dev/g/kondratyeva-7-lovushek.pdf\n\nЧто исправили:\n- Ловушка 6: поставили ваш текст слово в слово (заголовок, абзацы, «Спроси себя» и «Попробуй»), оборота про «одиночнее» больше нет\n- В конце добавили Инстаграм (instagram.com/tasya_prohelp) и Макс (89138970125) к контактам, Telegram оставили\n\n❗ Напоминаем: правки вносятся один раз, как было оговорено. Если всё верно, напишите «Принимаю», и мы переходим к созданию чат-бота. Если нужно что-то ещё, пришлите одним текстовым сообщением и добавьте фразу «это всё»."
+     }
+    ]
+   },
+   {
     "nick": "@edemsparmoscow",
     "name": "Наталья, спа «Эдемский пар» (Москва)",
     "stage": "Новый гайд",
