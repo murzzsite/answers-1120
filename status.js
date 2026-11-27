@@ -1,1 +1,1 @@
-window.STATUS = {"telegram":{"at":"2026-11-27T11:50:28.702Z","ok":true},"tripwire":{"at":"2026-11-27T11:50:28.702Z","ok":true},"run":"2026-11-27T11:50:28.702Z"};
+window.STATUS = {"telegram":{"at":"2026-11-27T11:55:26.732Z","ok":true},"tripwire":{"at":"2026-11-27T11:55:26.732Z","ok":true},"run":"2026-11-27T11:55:26.732Z"};
